@@ -1,36 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, ABI } from '../contracts/contractConfig';
+import React, { useState } from 'react';
 
 const UserDashboard = () => {
-  const [nfts, setNfts] = useState([]);
-
-  const fetchNFTs = async () => {
-    try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-      const userNFTs = await contract.getUserNFTs(await signer.getAddress());
-      setNfts(userNFTs);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchNFTs();
-  }, []);
+  const [activeTab, setActiveTab] = useState('myNFTs');
 
   return (
-    <div className="p-4 bg-gray-800 text-white rounded-lg">
-      <h2 className="text-2xl mb-4">你的 NFT</h2>
-      <ul>
-        {nfts.map((nft, index) => (
-          <li key={index} className="mb-2">
-            {JSON.stringify(nft)}
-          </li>
-        ))}
-      </ul>
+    <div className="p-4 bg-gray-800 text-white">
+      <h2 className="text-2xl mb-4">用户仪表盘</h2>
+      <div className="flex space-x-4 mb-4">
+        <button
+          className={`px-4 py-2 rounded-lg ${activeTab === 'myNFTs' ? 'bg-blue-600' : 'bg-gray-700'}`}
+          onClick={() => setActiveTab('myNFTs')}
+        >
+          My NFTs
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg ${activeTab === 'reserveVaccine' ? 'bg-blue-600' : 'bg-gray-700'}`}
+          onClick={() => setActiveTab('reserveVaccine')}
+        >
+          预约疫苗
+        </button>
+      </div>
+
+      {activeTab === 'myNFTs' && <div>这是 My NFTs 内容</div>}
+      {activeTab === 'reserveVaccine' && <div>这是预约疫苗内容</div>}
     </div>
   );
 };
