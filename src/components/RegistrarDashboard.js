@@ -1,75 +1,85 @@
-import React, { useState } from 'react';
-import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, ABI } from '../contracts/contractConfig';
-import { vaccineImages } from '../data/vaccineImages';
-import axios from 'axios';
+import React, { useState } from "react";
+import { ethers } from "ethers";
+import { CONTRACT_ADDRESS, ABI } from "../contracts/contractConfig";
+import { vaccineImages } from "../data/vaccineImages";
+import axios from "axios";
 
 const RegistrarDashboard = () => {
   const [formData, setFormData] = useState({
-    identityType: 'SSN',
-    identityId: '',
-    vaccineType: 'DTaP',
-    vaccineDose: 'Dose 1',
-    ethAddress: '',
-    vaccineImage: vaccineImages['DTaP'],
+    identityType: "SSN",
+    identityId: "",
+    vaccineType: "DTaP",
+    vaccineDose: "Dose 1",
+    ethAddress: "",
+    vaccineImage: vaccineImages["DTaP"],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => {
-      const updatedData = { ...prev, [name]: value };
-
-      // 如果修改的是疫苗类型，更新对应的图片链接
-      if (name === 'vaccineType') {
-        updatedData.vaccineImage = vaccineImages[value] || '';
-      }
-
-      return updatedData;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "vaccineType" && { vaccineImage: vaccineImages[value] || "" }),
+    }));
   };
 
-  const createNFTJson = (data) => {
-    return {
-      name: `Vaccine Certificate: ${data.vaccineType}`,
-      description: `This NFT certifies that the holder has been vaccinated with ${data.vaccineType}, ${data.vaccineDose}.`,
-      image: data.vaccineImage,
-      attributes: [
-        { trait_type: 'Identity Type', value: data.identityType },
-        { trait_type: 'Identity ID', value: data.identityId },
-        { trait_type: 'Vaccine Type', value: data.vaccineType },
-        { trait_type: 'Dose', value: data.vaccineDose },
-        { trait_type: 'Ethereum Address', value: data.ethAddress },
-      ],
-    };
-  };
-  const uploadToIPFS = async (data) => {
-    try {
-      const apiKey = process.env.REACT_APP_FILEBASE_API_KEY.trim(); // 确保无空格或换行符
-
-      const response = await axios.post(
-        process.env.REACT_APP_FILEBASE_ENDPOINT,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`, // 如果 Filebase 不要求 Base64 直接传递
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      return response.data.ipfsUrl; // 返回 IPFS URL
-    } catch (err) {
-      console.error('上传到 IPFS 失败:', err);
-      throw new Error('上传到 IPFS 失败');
+  // Validate form data
+  const validateForm = () => {
+    if (!formData.identityId || !formData.ethAddress) {
+      throw new Error("All fields are required. Please fill in all fields.");
     }
   };
 
+  // Create NFT JSON data
+  const createNFTJson = (data) => ({
+    name: `Vaccine Certificate: ${data.vaccineType}`,
+    description: `This NFT certifies that the holder has been vaccinated with ${data.vaccineType}, ${data.vaccineDose}.`,
+    image: data.vaccineImage,
+    attributes: [
+      { trait_type: "Identity Type", value: data.identityType },
+      { trait_type: "Identity ID", value: data.identityId },
+      { trait_type: "Vaccine Type", value: data.vaccineType },
+      { trait_type: "Dose", value: data.vaccineDose },
+      { trait_type: "Ethereum Address", value: data.ethAddress },
+    ],
+  });
 
+  // Upload JSON data to IPFS
+  const uploadToIPFS = async (data) => {
+    try {
+      const apiKey = process.env.REACT_APP_FILEBASE_API_KEY.trim();
+      const endpoint = process.env.REACT_APP_FILEBASE_ENDPOINT;
 
+      // Wrap data in 'file' object
+      const payload = {
+        file: {
+          name: "metadata.json",
+          content: data,
+        },
+      };
+
+      console.log("Uploading to IPFS with payload:", payload);
+
+      const response = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("IPFS Upload Response:", response.data);
+      return response.data.ipfsUrl;
+    } catch (err) {
+      console.error("Failed to upload to IPFS:", err);
+      throw new Error("Failed to upload to IPFS.");
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -77,24 +87,28 @@ const RegistrarDashboard = () => {
     setSuccessMessage(null);
 
     try {
-      // 转换表单数据为 NFT JSON 格式
+      validateForm(); // Validate inputs
+
+      // Generate NFT JSON
       const nftJson = createNFTJson(formData);
+      console.log("Generated NFT JSON:", nftJson);
 
-      // 上传 NFT JSON 到 IPFS
+      // Upload to IPFS
       const ipfsUrl = await uploadToIPFS(nftJson);
+      console.log("Uploaded to IPFS:", ipfsUrl);
 
-      // 调用智能合约的方法
-      // const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // const signer = provider.getSigner();
-      // const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+      // Mint NFT using smart contract
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
-      // const tx = await contract.issue(formData.ethAddress, ipfsUrl);
-      // await tx.wait();
+      const tx = await contract.issue(formData.ethAddress, ipfsUrl);
+      await tx.wait();
 
-      setSuccessMessage('NFT Mint 成功！');
+      setSuccessMessage("NFT Minted successfully!");
     } catch (err) {
-      console.error('处理失败:', err);
-      setError('NFT Mint 失败，请稍后重试');
+      console.error("Submission failed:", err);
+      setError(err.message || "Failed to mint NFT. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -102,14 +116,14 @@ const RegistrarDashboard = () => {
 
   return (
     <div className="p-4 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">登记员仪表盘</h2>
+      <h2 className="text-2xl mb-4">Registrar Dashboard</h2>
       <div>
         <h3 className="text-xl mb-2">Mint NFT</h3>
         <form className="grid gap-6" onSubmit={handleSubmit}>
           {/* Identity Type */}
           <div>
             <label htmlFor="identityType" className="block text-sm font-medium mb-1">
-              Identity Type <span className="text-gray-400">(选择身份类型，例如 SSN)</span>
+              Identity Type <span className="text-gray-400">(e.g., SSN)</span>
             </label>
             <select
               id="identityType"
@@ -128,7 +142,7 @@ const RegistrarDashboard = () => {
           {/* Identity ID */}
           <div>
             <label htmlFor="identityId" className="block text-sm font-medium mb-1">
-              Identity ID <span className="text-gray-400">(输入对应的身份 ID)</span>
+              Identity ID <span className="text-gray-400">(Enter your identity ID)</span>
             </label>
             <input
               id="identityId"
@@ -144,7 +158,7 @@ const RegistrarDashboard = () => {
           {/* Vaccine Type */}
           <div>
             <label htmlFor="vaccineType" className="block text-sm font-medium mb-1">
-              Vaccine Type <span className="text-gray-400">(选择疫苗类型，例如 DTaP)</span>
+              Vaccine Type <span className="text-gray-400">(e.g., DTaP)</span>
             </label>
             <select
               id="vaccineType"
@@ -162,7 +176,7 @@ const RegistrarDashboard = () => {
           {/* Vaccine Dose */}
           <div>
             <label htmlFor="vaccineDose" className="block text-sm font-medium mb-1">
-              Vaccine Dose <span className="text-gray-400">(选择疫苗剂量，例如 Dose 1)</span>
+              Vaccine Dose <span className="text-gray-400">(e.g., Dose 1)</span>
             </label>
             <select
               id="vaccineDose"
@@ -180,7 +194,7 @@ const RegistrarDashboard = () => {
           {/* Ethereum Address */}
           <div>
             <label htmlFor="ethAddress" className="block text-sm font-medium mb-1">
-              Ethereum Address <span className="text-gray-400">(输入接收 NFT 的以太坊地址)</span>
+              Ethereum Address <span className="text-gray-400">(Enter the recipient's Ethereum address)</span>
             </label>
             <input
               id="ethAddress"
@@ -193,7 +207,7 @@ const RegistrarDashboard = () => {
             />
           </div>
 
-          {/* Display Vaccine Image */}
+          {/* Vaccine Image */}
           {formData.vaccineImage && (
             <div>
               <label className="block text-sm font-medium mb-1">Selected Vaccine Image</label>
@@ -211,7 +225,7 @@ const RegistrarDashboard = () => {
             className="px-4 py-2 bg-blue-600 rounded-lg w-full"
             disabled={loading}
           >
-            {loading ? 'Processing...' : 'Mint NFT'}
+            {loading ? "Processing..." : "Mint NFT"}
           </button>
         </form>
 
