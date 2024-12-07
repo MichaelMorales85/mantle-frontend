@@ -1,32 +1,51 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './components/Home';
 import UserDashboard from './components/UserDashboard';
 import RegistrarDashboard from './components/RegistrarDashboard';
-import useWallet from './hooks/useWallet';
 
 const App = () => {
-  const { walletAddress, isRegistrar, connectWallet } = useWallet();
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [isRegistrar, setIsRegistrar] = useState(false);
 
   return (
     <Router>
       <Routes>
-        {/* 初始页面 */}
+        {/* 首页 */}
         <Route
           path="/"
-          element={<Home walletAddress={walletAddress} connectWallet={connectWallet} />}
+          element={
+            <Home
+              walletAddress={walletAddress}
+              setWalletAddress={setWalletAddress}
+              isRegistrar={isRegistrar}
+              setIsRegistrar={setIsRegistrar}
+            />
+          }
         />
 
-        {/* 普通用户页面 */}
+        {/* 用户仪表盘 */}
         <Route
           path="/user-dashboard"
-          element={walletAddress && !isRegistrar ? <UserDashboard /> : <Home />}
+          element={
+            walletAddress && !isRegistrar ? (
+              <UserDashboard />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
 
-        {/* 登记员页面 */}
+        {/* 登记员仪表盘 */}
         <Route
           path="/registrar-dashboard"
-          element={walletAddress && isRegistrar ? <RegistrarDashboard /> : <Home />}
+          element={
+            walletAddress && isRegistrar ? (
+              <RegistrarDashboard />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
       </Routes>
     </Router>
