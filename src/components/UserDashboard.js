@@ -1,28 +1,32 @@
 import React, { useState } from 'react';
+import MyNFTs from './MyNFTs';
+import VaccineReservation from './VaccineReservation';
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState('myNFTs');
 
   return (
-    <div className="p-4 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">用户仪表盘</h2>
-      <div className="flex space-x-4 mb-4">
+    <div className="p-4 bg-gray-800 text-white min-h-screen">
+      <h2 className="text-3xl font-bold mb-6">用户仪表盘</h2>
+      <div className="flex space-x-4 mb-6">
         <button
-          className={`px-4 py-2 rounded-lg ${activeTab === 'myNFTs' ? 'bg-blue-600' : 'bg-gray-700'}`}
+          className={`px-6 py-2 rounded-lg ${activeTab === 'myNFTs' ? 'bg-blue-600' : 'bg-gray-700'
+            }`}
           onClick={() => setActiveTab('myNFTs')}
         >
-          My NFTs
+          我的 NFT
         </button>
         <button
-          className={`px-4 py-2 rounded-lg ${activeTab === 'reserveVaccine' ? 'bg-blue-600' : 'bg-gray-700'}`}
+          className={`px-6 py-2 rounded-lg ${activeTab === 'reserveVaccine' ? 'bg-blue-600' : 'bg-gray-700'
+            }`}
           onClick={() => setActiveTab('reserveVaccine')}
         >
           预约疫苗
         </button>
       </div>
 
-      {activeTab === 'myNFTs' && <div>这是 My NFTs 内容</div>}
-      {activeTab === 'reserveVaccine' && <div>这是预约疫苗内容</div>}
+      {activeTab === 'myNFTs' && <MyNFTs />}
+      {activeTab === 'reserveVaccine' && <VaccineReservation />}
     </div>
   );
 };
