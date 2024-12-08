@@ -1,17 +1,18 @@
 import React, { createContext, useContext, useState } from 'react';
 import { ethers } from 'ethers';
+import { REGISTRAR_ADDRESSES } from '../constants/generalconstant'; // Import the registrar addresses
 
-// 创建 Context
+// Create Context
 const WalletContext = createContext();
 
-// 提供 Context 的 Provider
+// Provide Context Provider
 export const WalletProvider = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState(null);
   const [isRegistrar, setIsRegistrar] = useState(false);
 
   const connectWallet = async () => {
     try {
-      if (!window.ethereum) throw new Error('未检测到 MetaMask');
+      if (!window.ethereum) throw new Error('MetaMask not detected');
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send('eth_requestAccounts', []);
@@ -19,24 +20,22 @@ export const WalletProvider = ({ children }) => {
       const address = await signer.getAddress();
 
       setWalletAddress(address);
-      setIsRegistrar(
-        address.toLowerCase() === '0x678f7fb42bcc819285efe21fda421e67b2f45839' // 示例地址
-      );
+
+      // Check if the address is a registrar
+      setIsRegistrar(REGISTRAR_ADDRESSES.includes(address.toLowerCase()));
     } catch (error) {
-      console.error('连接钱包失败:', error);
+      console.error('Failed to connect wallet:', error);
     }
   };
 
   return (
-    <WalletContext.Provider
-      value={{ walletAddress, isRegistrar, connectWallet }}
-    >
+    <WalletContext.Provider value={{ walletAddress, isRegistrar, connectWallet }}>
       {children}
     </WalletContext.Provider>
   );
 };
 
-// 创建一个 Hook 简化使用 Context
+// Create a Hook to Simplify Context Usage
 export const useWalletContext = () => {
   return useContext(WalletContext);
 };
