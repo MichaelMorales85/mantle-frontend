@@ -38,7 +38,7 @@ const RegistrarDashboard = () => {
   const createNFTJson = (data) => ({
     name: `Vaccine Certificate: ${data.vaccineType}`,
     description: `This NFT certifies that the holder has been vaccinated with ${data.vaccineType}, ${data.vaccineDose}.`,
-    image: data.vaccineImage,
+    image: data.vaccineImage, // Use the image URL directly
     attributes: [
       { trait_type: "Identity Type", value: data.identityType },
       { trait_type: "Identity ID", value: data.identityId },
@@ -48,34 +48,27 @@ const RegistrarDashboard = () => {
     ],
   });
 
-  // Upload JSON data to IPFS
-  const uploadToIPFS = async (data) => {
+  // Upload JSON data to Pinata
+  const uploadToPinata = async (data) => {
     try {
-      const apiKey = process.env.REACT_APP_FILEBASE_API_KEY.trim();
-      const endpoint = process.env.REACT_APP_FILEBASE_ENDPOINT;
+      const apiKey = process.env.REACT_APP_PINATA_API_KEY;
+      const apiSecret = process.env.REACT_APP_PINATA_SECRET_API_KEY;
 
-      // Wrap data in 'file' object
-      const payload = {
-        file: {
-          name: "metadata.json",
-          content: data,
-        },
+      const url = "https://api.pinata.cloud/pinning/pinJSONToIPFS";
+      const headers = {
+        "Content-Type": "application/json",
+        pinata_api_key: apiKey,
+        pinata_secret_api_key: apiSecret,
       };
 
-      console.log("Uploading to IPFS with payload:", payload);
+      console.log("Uploading to Pinata...");
+      const response = await axios.post(url, data, { headers });
+      console.log("Pinata Response:", response.data);
 
-      const response = await axios.post(endpoint, payload, {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      console.log("IPFS Upload Response:", response.data);
-      return response.data.ipfsUrl;
+      return `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
     } catch (err) {
-      console.error("Failed to upload to IPFS:", err);
-      throw new Error("Failed to upload to IPFS.");
+      console.error("Failed to upload to Pinata:", err);
+      throw new Error("Failed to upload to Pinata.");
     }
   };
 
@@ -93,9 +86,9 @@ const RegistrarDashboard = () => {
       const nftJson = createNFTJson(formData);
       console.log("Generated NFT JSON:", nftJson);
 
-      // Upload to IPFS
-      const ipfsUrl = await uploadToIPFS(nftJson);
-      console.log("Uploaded to IPFS:", ipfsUrl);
+      // Upload to Pinata
+      const ipfsUrl = await uploadToPinata(nftJson);
+      console.log("Uploaded to Pinata:", ipfsUrl);
 
       // Mint NFT using smart contract
       const provider = new ethers.providers.Web3Provider(window.ethereum);
