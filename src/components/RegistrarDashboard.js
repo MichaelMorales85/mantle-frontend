@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, ABI } from "../contracts/contractConfig";
 import { vaccineImages } from "../data/vaccineImages";
 import axios from "axios";
+import CryptoJS from "crypto-js"; // Import crypto-js
 
 const RegistrarDashboard = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ const RegistrarDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  const SALT = process.env.UNIQUE_SALT_VALUE; // Define a unique salt value
 
   // Handle input changes
   const handleChange = (e) => {
@@ -34,14 +37,20 @@ const RegistrarDashboard = () => {
     }
   };
 
+  // Hash and salt the identity ID
+  const hashIdentityId = (identityId) => {
+    const saltedId = `${identityId}:${SALT}`; // Add the salt
+    return CryptoJS.SHA256(saltedId).toString(); // Return hashed string
+  };
+
   // Create NFT JSON data
-  const createNFTJson = (data) => ({
+  const createNFTJson = (data, hashedIdentityId) => ({
     name: `Vaccine Certificate: ${data.vaccineType}`,
     description: `This NFT certifies that the holder has been vaccinated with ${data.vaccineType}, ${data.vaccineDose}.`,
     image: data.vaccineImage, // Use the image URL directly
     attributes: [
       { trait_type: "Identity Type", value: data.identityType },
-      { trait_type: "Identity ID", value: data.identityId },
+      { trait_type: "Hashed Identity ID", value: hashedIdentityId },
       { trait_type: "Vaccine Type", value: data.vaccineType },
       { trait_type: "Dose", value: data.vaccineDose },
       { trait_type: "Ethereum Address", value: data.ethAddress },
@@ -82,8 +91,12 @@ const RegistrarDashboard = () => {
     try {
       validateForm(); // Validate inputs
 
+      // Hash and salt the identityId
+      const hashedIdentityId = hashIdentityId(formData.identityId);
+      console.log("Hashed Identity ID:", hashedIdentityId);
+
       // Generate NFT JSON
-      const nftJson = createNFTJson(formData);
+      const nftJson = createNFTJson(formData, hashedIdentityId);
       console.log("Generated NFT JSON:", nftJson);
 
       // Upload to Pinata
