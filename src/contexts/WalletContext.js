@@ -22,7 +22,7 @@ export const WalletProvider = ({ children }) => {
       setWalletAddress(address);
 
       // Check if the address is a registrar
-      setIsRegistrar(REGISTRAR_ADDRESSES.includes(address.toLowerCase()));
+      setIsRegistrar(REGISTRAR_ADDRESSES.includes(address));
     } catch (error) {
       console.error('Failed to connect wallet:', error);
     }
