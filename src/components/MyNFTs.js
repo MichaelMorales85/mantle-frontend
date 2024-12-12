@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESS, ABI } from '../contracts/contractConfig';
 import { useWalletContext } from '../contexts/WalletContext';
-import { nftList } from '../data/nftData';
 
 const MyNFTs = () => {
     const { walletAddress } = useWalletContext(); // 从 Context 获取钱包地址
@@ -20,20 +19,44 @@ const MyNFTs = () => {
         setError(null);
 
         try {
-            // const provider = new ethers.providers.Web3Provider(window.ethereum);
-            // const signer = provider.getSigner();
-            // const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
-            // // 调用合约方法获取用户的 NFT 数据
-            // const userNFTs = await contract.getUserNFTs(walletAddress);
+            // 调用合约方法获取用户的 NFT 数据
+            const [tokenIds, tokenURIs] = await contract.getMyNFTs();
 
-            // // 格式化返回的数据
-            // const formattedNFTs = userNFTs.map((nft, index) => ({
-            //     id: index + 1, // 假设按顺序分配 ID
-            //     metadata: nft, // NFT 元数据
-            // }));
+            // 解析 NFT 元数据
+            const formattedNFTs = await Promise.all(
+                tokenURIs.map(async (uri, index) => {
+                    try {
+                        // 替换 IPFS 格式为 Pinata 网关格式
+                        const pinataURI = uri.replace(
+                            'ipfs://',
+                            'https://gateway.pinata.cloud/ipfs/'
+                        );
+                        const response = await fetch(pinataURI);
+                        const metadata = await response.json();
 
-            setNFTs(nftList);
+                        return {
+                            id: tokenIds[index].toString(), // Token ID
+                            name: metadata.name,
+                            description: metadata.description,
+                            image: metadata.image.replace(
+                                'ipfs://',
+                                'https://gateway.pinata.cloud/ipfs/'
+                            ), // 将元数据中的图片 URI 替换为 Pinata 网关
+                            attributes: metadata.attributes || [], // 属性
+                        };
+                    } catch (err) {
+                        console.error('解析 NFT 元数据失败:', err);
+                        return null;
+                    }
+                })
+            );
+
+            // 过滤解析失败的 NFT
+            setNFTs(formattedNFTs.filter((nft) => nft !== null));
         } catch (err) {
             console.error('获取 NFT 失败:', err);
             setError('无法加载您的 NFT，请稍后重试。');
