@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, ABI } from "../contracts/contractConfig";
 import { vaccineImages } from "../data/vaccineImages";
 import axios from "axios";
-import CryptoJS from "crypto-js"; // Import crypto-js
+import CryptoJS from "crypto-js";
 
 const RegistrarDashboard = () => {
   const [formData, setFormData] = useState({
@@ -18,9 +18,8 @@ const RegistrarDashboard = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  const SALT = process.env.UNIQUE_SALT_VALUE; // Define a unique salt value
+  const SALT = process.env.UNIQUE_SALT_VALUE;
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -30,34 +29,29 @@ const RegistrarDashboard = () => {
     }));
   };
 
-  // Validate form data
   const validateForm = () => {
     if (!formData.identityId || !formData.ethAddress) {
       throw new Error("All fields are required. Please fill in all fields.");
     }
   };
 
-  // Hash and salt the identity ID
   const hashIdentityId = (identityId) => {
-    const saltedId = `${identityId}:${SALT}`; // Add the salt
-    return CryptoJS.SHA256(saltedId).toString(); // Return hashed string
+    const saltedId = `${identityId}:${SALT}`;
+    return CryptoJS.SHA256(saltedId).toString();
   };
 
-  // Create NFT JSON data
   const createNFTJson = (data, hashedIdentityId) => ({
     name: `Vaccine Certificate: ${data.vaccineType}`,
     description: `This NFT certifies that the holder has been vaccinated with ${data.vaccineType}, ${data.vaccineDose}.`,
-    image: data.vaccineImage, // Use the image URL directly
+    image: data.vaccineImage,
     attributes: [
       { trait_type: "Identity Type", value: data.identityType },
       { trait_type: "Hashed Identity ID", value: hashedIdentityId },
       { trait_type: "Vaccine Type", value: data.vaccineType },
       { trait_type: "Dose", value: data.vaccineDose },
-      { trait_type: "Ethereum Address", value: data.ethAddress },
     ],
   });
 
-  // Upload JSON data to Pinata
   const uploadToPinata = async (data) => {
     try {
       const apiKey = process.env.REACT_APP_PINATA_API_KEY;
@@ -70,18 +64,13 @@ const RegistrarDashboard = () => {
         pinata_secret_api_key: apiSecret,
       };
 
-      console.log("Uploading to Pinata...");
       const response = await axios.post(url, data, { headers });
-      console.log("Pinata Response:", response.data);
-
       return `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
     } catch (err) {
-      console.error("Failed to upload to Pinata:", err);
       throw new Error("Failed to upload to Pinata.");
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -89,21 +78,11 @@ const RegistrarDashboard = () => {
     setSuccessMessage(null);
 
     try {
-      validateForm(); // Validate inputs
-
-      // Hash and salt the identityId
+      validateForm();
       const hashedIdentityId = hashIdentityId(formData.identityId);
-      console.log("Hashed Identity ID:", hashedIdentityId);
-
-      // Generate NFT JSON
       const nftJson = createNFTJson(formData, hashedIdentityId);
-      console.log("Generated NFT JSON:", nftJson);
-
-      // Upload to Pinata
       const ipfsUrl = await uploadToPinata(nftJson);
-      console.log("Uploaded to Pinata:", ipfsUrl);
 
-      // Mint NFT using smart contract
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
@@ -113,7 +92,6 @@ const RegistrarDashboard = () => {
 
       setSuccessMessage("NFT Minted successfully!");
     } catch (err) {
-      console.error("Submission failed:", err);
       setError(err.message || "Failed to mint NFT. Please try again.");
     } finally {
       setLoading(false);
@@ -121,22 +99,21 @@ const RegistrarDashboard = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-800 text-white">
-      <h2 className="text-2xl mb-4">Registrar Dashboard</h2>
-      <div>
-        <h3 className="text-xl mb-2">Mint NFT</h3>
-        <form className="grid gap-6" onSubmit={handleSubmit}>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-blue-900">
+      <div className="bg-gradient-to-b from-gray-800 via-gray-900 to-black text-white p-6 rounded-2xl shadow-xl w-full max-w-lg">
+        <h2 className="text-2xl font-bold mb-4 text-center">Mint Vaccine NFT</h2>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Identity Type */}
           <div>
-            <label htmlFor="identityType" className="block text-sm font-medium mb-1">
-              Identity Type <span className="text-gray-400">(e.g., SSN)</span>
+            <label htmlFor="identityType" className="block text-sm mb-1">
+              Identity Type
             </label>
             <select
               id="identityType"
               name="identityType"
               value={formData.identityType}
               onChange={handleChange}
-              className="p-2 bg-gray-700 rounded-lg w-full"
+              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
             >
               <option value="SSN">SSN</option>
               <option value="driver license">Driver License</option>
@@ -147,31 +124,31 @@ const RegistrarDashboard = () => {
 
           {/* Identity ID */}
           <div>
-            <label htmlFor="identityId" className="block text-sm font-medium mb-1">
-              Identity ID <span className="text-gray-400">(Enter your identity ID)</span>
+            <label htmlFor="identityId" className="block text-sm mb-1">
+              Identity ID
             </label>
             <input
               id="identityId"
               type="text"
               name="identityId"
-              placeholder="Identity ID"
               value={formData.identityId}
               onChange={handleChange}
-              className="p-2 bg-gray-700 rounded-lg w-full"
+              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
+              placeholder="Enter your Identity ID"
             />
           </div>
 
           {/* Vaccine Type */}
           <div>
-            <label htmlFor="vaccineType" className="block text-sm font-medium mb-1">
-              Vaccine Type <span className="text-gray-400">(e.g., DTaP)</span>
+            <label htmlFor="vaccineType" className="block text-sm mb-1">
+              Vaccine Type
             </label>
             <select
               id="vaccineType"
               name="vaccineType"
               value={formData.vaccineType}
               onChange={handleChange}
-              className="p-2 bg-gray-700 rounded-lg w-full"
+              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
             >
               <option value="DTaP">DTaP</option>
               <option value="MMR">MMR</option>
@@ -181,15 +158,15 @@ const RegistrarDashboard = () => {
 
           {/* Vaccine Dose */}
           <div>
-            <label htmlFor="vaccineDose" className="block text-sm font-medium mb-1">
-              Vaccine Dose <span className="text-gray-400">(e.g., Dose 1)</span>
+            <label htmlFor="vaccineDose" className="block text-sm mb-1">
+              Vaccine Dose
             </label>
             <select
               id="vaccineDose"
               name="vaccineDose"
               value={formData.vaccineDose}
               onChange={handleChange}
-              className="p-2 bg-gray-700 rounded-lg w-full"
+              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
             >
               <option value="Dose 1">Dose 1</option>
               <option value="Dose 2">Dose 2</option>
@@ -199,28 +176,28 @@ const RegistrarDashboard = () => {
 
           {/* Ethereum Address */}
           <div>
-            <label htmlFor="ethAddress" className="block text-sm font-medium mb-1">
-              Ethereum Address <span className="text-gray-400">(Enter the recipient's Ethereum address)</span>
+            <label htmlFor="ethAddress" className="block text-sm mb-1">
+              Ethereum Address
             </label>
             <input
               id="ethAddress"
               type="text"
               name="ethAddress"
-              placeholder="Ethereum Address"
               value={formData.ethAddress}
               onChange={handleChange}
-              className="p-2 bg-gray-700 rounded-lg w-full"
+              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
+              placeholder="Enter recipient's Ethereum address"
             />
           </div>
 
           {/* Vaccine Image */}
           {formData.vaccineImage && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Selected Vaccine Image</label>
+            <div className="flex flex-col items-center">
+              <label className="text-sm mb-1">Selected Vaccine Image</label>
               <img
                 src={formData.vaccineImage}
-                alt={formData.vaccineType}
-                className="w-full max-w-xs rounded-lg"
+                alt="Vaccine"
+                className="rounded-lg w-32 h-32"
               />
             </div>
           )}
@@ -228,18 +205,18 @@ const RegistrarDashboard = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 rounded-lg w-full"
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white font-bold hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition duration-300"
             disabled={loading}
           >
             {loading ? "Processing..." : "Mint NFT"}
           </button>
         </form>
 
-        {/* Success Message */}
-        {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}
-
-        {/* Error Message */}
-        {error && <p className="text-red-500 mt-4">{error}</p>}
+        {/* Success and Error Messages */}
+        {successMessage && (
+          <p className="text-green-500 text-center mt-4">{successMessage}</p>
+        )}
+        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
       </div>
     </div>
   );

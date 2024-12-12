@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, ABI } from '../contracts/contractConfig';
-import { useWalletContext } from '../contexts/WalletContext';
+import React, { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import { CONTRACT_ADDRESS, ABI } from "../contracts/contractConfig";
+import { useWalletContext } from "../contexts/WalletContext";
 
 const MyNFTs = () => {
-    const { walletAddress } = useWalletContext(); // 从 Context 获取钱包地址
-    const [nfts, setNFTs] = useState([]); // 存储 NFT 数据
-    const [loading, setLoading] = useState(false); // 加载状态
-    const [error, setError] = useState(null); // 错误信息
+    const { walletAddress } = useWalletContext(); // Get wallet address from Context
+    const [nfts, setNFTs] = useState([]); // Store NFT data
+    const [loading, setLoading] = useState(false); // Loading state
+    const [error, setError] = useState(null); // Error state
 
     const fetchNFTs = async () => {
         if (!walletAddress) {
-            setError('请先连接钱包以查看您的 NFT。');
+            setError("Please connect your wallet to view NFTs.");
             return;
         }
 
@@ -23,17 +23,17 @@ const MyNFTs = () => {
             const signer = provider.getSigner();
             const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
-            // 调用合约方法获取用户的 NFT 数据
+            // Call contract method to fetch NFT data
             const [tokenIds, tokenURIs] = await contract.getMyNFTs();
 
-            // 解析 NFT 元数据
+            // Parse NFT metadata
             const formattedNFTs = await Promise.all(
                 tokenURIs.map(async (uri, index) => {
                     try {
-                        // 替换 IPFS 格式为 Pinata 网关格式
+                        // Replace IPFS URL format with Pinata gateway
                         const pinataURI = uri.replace(
-                            'ipfs://',
-                            'https://gateway.pinata.cloud/ipfs/'
+                            "ipfs://",
+                            "https://gateway.pinata.cloud/ipfs/"
                         );
                         const response = await fetch(pinataURI);
                         const metadata = await response.json();
@@ -43,23 +43,23 @@ const MyNFTs = () => {
                             name: metadata.name,
                             description: metadata.description,
                             image: metadata.image.replace(
-                                'ipfs://',
-                                'https://gateway.pinata.cloud/ipfs/'
-                            ), // 将元数据中的图片 URI 替换为 Pinata 网关
-                            attributes: metadata.attributes || [], // 属性
+                                "ipfs://",
+                                "https://gateway.pinata.cloud/ipfs/"
+                            ),
+                            attributes: metadata.attributes || [], // Attributes
                         };
                     } catch (err) {
-                        console.error('解析 NFT 元数据失败:', err);
+                        console.error("Failed to parse NFT metadata:", err);
                         return null;
                     }
                 })
             );
 
-            // 过滤解析失败的 NFT
+            // Filter out any failed NFTs
             setNFTs(formattedNFTs.filter((nft) => nft !== null));
         } catch (err) {
-            console.error('获取 NFT 失败:', err);
-            setError('无法加载您的 NFT，请稍后重试。');
+            console.error("Failed to fetch NFTs:", err);
+            setError("Failed to load your NFTs. Please try again later.");
         } finally {
             setLoading(false);
         }
@@ -70,45 +70,63 @@ const MyNFTs = () => {
     }, [walletAddress]);
 
     return (
-        <div className="p-4 bg-gray-800 text-white rounded-lg">
-            <h2 className="text-2xl mb-4">我的 NFT</h2>
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-800 text-white p-8">
+            <h2 className="text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-400">
+                My NFT Collection
+            </h2>
 
-            {/* 加载状态 */}
-            {loading && <p>正在加载您的 NFT...</p>}
+            {/* Loading State */}
+            {loading && <p className="text-center">Loading your NFTs...</p>}
 
-            {/* 错误提示 */}
-            {error && <p className="text-red-500">{error}</p>}
+            {/* Error State */}
+            {error && <p className="text-red-500 text-center">{error}</p>}
 
-            {/* 显示 NFT 列表 */}
+            {/* NFT List */}
             {!loading && nfts.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {nfts.map((nft) => (
                         <div
                             key={nft.id}
-                            className="bg-gray-800 rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow duration-300"
+                            className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                         >
-                            <img
-                                src={nft.image}
-                                alt={nft.name}
-                                className="rounded-md mb-4 w-full"
-                            />
-                            <h3 className="text-xl font-bold mb-2">{nft.name}</h3>
-                            <p className="text-sm mb-4">{nft.description}</p>
-                            <div className="text-sm text-gray-400 mb-4">
-                                {nft.attributes.map((attr, index) => (
-                                    <p key={index}>
-                                        <strong>{attr.trait_type}: </strong>
-                                        {attr.value}
-                                    </p>
-                                ))}
+                            {/* Image Section */}
+                            <div className="relative group">
+                                <img
+                                    src={nft.image}
+                                    alt={nft.name}
+                                    className="rounded-t-lg w-full h-48 object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-30 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </div>
+
+                            {/* Info Section */}
+                            <div className="p-6">
+                                <h3 className="text-lg font-bold text-gradient bg-clip-text from-blue-400 to-purple-500 mb-2">
+                                    {nft.name}
+                                </h3>
+                                <p className="text-sm text-gray-400 mb-4 line-clamp-2">
+                                    {nft.description}
+                                </p>
+                                <div className="text-sm text-gray-300 space-y-1">
+                                    {nft.attributes.map((attr, index) => (
+                                        <p key={index} className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-200">
+                                                {attr.trait_type}:
+                                            </span>
+                                            <span>{attr.value}</span>
+                                        </p>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* 如果没有 NFT */}
-            {!loading && nfts.length === 0 && !error && <p>您还没有任何 NFT。</p>}
+            {/* No NFTs */}
+            {!loading && nfts.length === 0 && !error && (
+                <p className="text-center text-gray-400">You don't own any NFTs.</p>
+            )}
         </div>
     );
 };

@@ -3,26 +3,30 @@ import { vaccineList } from '../data/vaccineData';
 
 const VaccineReservation = () => {
     return (
-        <div className="p-6 bg-gray-900 text-white min-h-screen">
-            <h2 className="text-3xl font-bold mb-6 text-center">疫苗预约</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="p-6 min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-800 text-white">
+            <h2 className="text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+                Vaccine Reservation
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {vaccineList.map((vaccine) => (
                     <div
                         key={vaccine.id}
-                        className="bg-gray-800 rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow duration-300"
+                        className="bg-gradient-to-b from-gray-800 via-gray-900 to-black rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow duration-300"
                     >
                         <img
                             src={vaccine.image}
                             alt={vaccine.name}
-                            className="rounded-md mb-4 w-full"
+                            className="rounded-lg mb-4 w-full h-48 object-cover"
                         />
-                        <h3 className="text-xl font-bold mb-2">{vaccine.name}</h3>
-                        <p className="text-sm mb-4">{vaccine.description}</p>
+                        <h3 className="text-2xl font-bold mb-3 text-gradient bg-clip-text from-blue-400 to-purple-500">
+                            {vaccine.name}
+                        </h3>
+                        <p className="text-sm text-gray-300 mb-6">{vaccine.description}</p>
                         <button
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium"
-                            onClick={() => alert(`预约 ${vaccine.name}`)}
+                            className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold shadow-md hover:shadow-lg transition-transform duration-300 transform hover:scale-105"
+                            onClick={() => alert(`You have reserved ${vaccine.name}`)}
                         >
-                            预约
+                            Reserve
                         </button>
                     </div>
                 ))}
