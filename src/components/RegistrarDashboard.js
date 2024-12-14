@@ -83,6 +83,7 @@ const RegistrarDashboard = () => {
       const nftJson = createNFTJson(formData, hashedIdentityId);
       const ipfsUrl = await uploadToPinata(nftJson);
 
+      console.log(`ipfsUrl is at ${ipfsUrl}`);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
