@@ -6,7 +6,7 @@ import { useWalletContext } from "../contexts/WalletContext";
 // Reusable NFTCard Component for displaying a single NFT
 const NFTCard = ({ nft }) => {
     return (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden flex flex-col">
+        <div className="bg-blue-500 border border-blue-600 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden flex flex-col">
             {/* Image Section */}
             <div className="relative">
                 <img
@@ -22,30 +22,30 @@ const NFTCard = ({ nft }) => {
                 <h3 className="text-lg font-semibold text-white mb-2 truncate">
                     {nft.name || "Untitled NFT"}
                 </h3>
-                <p className="text-sm text-gray-400 mb-4 line-clamp-3">
+                <p className="text-sm text-gray-300 mb-4 line-clamp-3">
                     {nft.description || "No description available."}
                 </p>
 
                 {/* Attributes Section */}
-                <div className="text-sm text-gray-300 space-y-1 flex-grow">
+                <div className="text-sm text-gray-200 space-y-1 flex-grow">
                     {nft.attributes && nft.attributes.length > 0 ? (
                         nft.attributes.map((attr, index) => (
                             <div key={index} className="flex items-start gap-2 break-words">
-                                <span className="font-semibold text-gray-200">
+                                <span className="font-semibold text-gray-100">
                                     {attr.trait_type || "Attribute"}:
                                 </span>
                                 <span>{attr.value || "N/A"}</span>
                             </div>
                         ))
                     ) : (
-                        <p className="text-gray-500">No attributes available.</p>
+                        <p className="text-gray-400">No attributes available.</p>
                     )}
                 </div>
             </div>
 
             {/* Action Button */}
-            <div className="bg-gray-700 p-3 text-center">
-                <button className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold shadow-md hover:shadow-lg transition-transform duration-300 transform hover:scale-105">
+            <div className="bg-blue-600 p-3 text-center">
+                <button className="w-full py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold shadow-md hover:shadow-lg transition-transform duration-300 transform hover:scale-105">
                     View Details
                 </button>
             </div>
@@ -120,8 +120,8 @@ const MyNFTs = () => {
     }, [walletAddress]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-800 text-white p-8">
-            <h2 className="text-4xl font-bold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-400">
+        <div className="min-h-screen bg-blue-600 text-white p-8">
+            <h2 className="text-4xl font-bold text-center mb-10 text-white">
                 My NFT Collection
             </h2>
 
@@ -129,7 +129,7 @@ const MyNFTs = () => {
             {loading && <p className="text-center">Loading your NFTs...</p>}
 
             {/* Error State */}
-            {error && <p className="text-red-500 text-center">{error}</p>}
+            {error && <p className="text-red-400 text-center">{error}</p>}
 
             {/* NFT List */}
             {!loading && nfts.length > 0 && (
@@ -142,7 +142,7 @@ const MyNFTs = () => {
 
             {/* No NFTs */}
             {!loading && nfts.length === 0 && !error && (
-                <p className="text-center text-gray-400">You don't own any NFTs.</p>
+                <p className="text-center text-gray-200">You don't own any NFTs.</p>
             )}
         </div>
     );

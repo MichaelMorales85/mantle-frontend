@@ -100,8 +100,8 @@ const RegistrarDashboard = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-blue-900">
-      <div className="bg-gradient-to-b from-gray-800 via-gray-900 to-black text-white p-6 rounded-2xl shadow-xl w-full max-w-lg">
+    <div className="flex items-center justify-center min-h-screen bg-blue-600 text-white">
+      <div className="bg-blue-700 text-white p-6 rounded-2xl shadow-xl w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-4 text-center">Mint Vaccine NFT</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Identity Type */}
@@ -114,7 +114,7 @@ const RegistrarDashboard = () => {
               name="identityType"
               value={formData.identityType}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
+              className="w-full p-3 rounded-lg bg-blue-50 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="SSN">SSN</option>
               <option value="driver license">Driver License</option>
@@ -134,7 +134,7 @@ const RegistrarDashboard = () => {
               name="identityId"
               value={formData.identityId}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
+              className="w-full p-3 rounded-lg bg-blue-50 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter your Identity ID"
             />
           </div>
@@ -149,7 +149,7 @@ const RegistrarDashboard = () => {
               name="vaccineType"
               value={formData.vaccineType}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
+              className="w-full p-3 rounded-lg bg-blue-50 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="DTaP">DTaP</option>
               <option value="MMR">MMR</option>
@@ -167,7 +167,7 @@ const RegistrarDashboard = () => {
               name="vaccineDose"
               value={formData.vaccineDose}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
+              className="w-full p-3 rounded-lg bg-blue-50 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="Dose 1">Dose 1</option>
               <option value="Dose 2">Dose 2</option>
@@ -186,7 +186,7 @@ const RegistrarDashboard = () => {
               name="ethAddress"
               value={formData.ethAddress}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg bg-gray-700 text-gray-200"
+              className="w-full p-3 rounded-lg bg-blue-50 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter recipient's Ethereum address"
             />
           </div>
@@ -206,7 +206,7 @@ const RegistrarDashboard = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white font-bold hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition duration-300"
+            className="w-full py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold hover:shadow-lg transition duration-300"
             disabled={loading}
           >
             {loading ? "Processing..." : "Mint NFT"}
@@ -215,9 +215,9 @@ const RegistrarDashboard = () => {
 
         {/* Success and Error Messages */}
         {successMessage && (
-          <p className="text-green-500 text-center mt-4">{successMessage}</p>
+          <p className="text-green-400 text-center mt-4">{successMessage}</p>
         )}
-        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+        {error && <p className="text-red-400 text-center mt-4">{error}</p>}
       </div>
     </div>
   );
