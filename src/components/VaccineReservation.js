@@ -1,5 +1,5 @@
-import React from 'react';
-import { vaccineList } from '../data/vaccineData';
+import React from "react";
+import { vaccineList } from "../data/vaccineData";
 
 const VaccineReservation = () => {
     return (
@@ -11,23 +11,37 @@ const VaccineReservation = () => {
                 {vaccineList.map((vaccine) => (
                     <div
                         key={vaccine.id}
-                        className="bg-gradient-to-b from-gray-800 via-gray-900 to-black rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow duration-300"
+                        className="bg-gradient-to-b from-gray-800 via-gray-900 to-black rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow duration-300 flex flex-col"
+                        style={{ minHeight: "400px" }} // Ensuring fixed height
                     >
-                        <img
-                            src={vaccine.image}
-                            alt={vaccine.name}
-                            className="rounded-lg mb-4 w-full h-48 object-cover"
-                        />
-                        <h3 className="text-2xl font-bold mb-3 text-gradient bg-clip-text from-blue-400 to-purple-500">
-                            {vaccine.name}
-                        </h3>
-                        <p className="text-sm text-gray-300 mb-6">{vaccine.description}</p>
-                        <button
-                            className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold shadow-md hover:shadow-lg transition-transform duration-300 transform hover:scale-105"
-                            onClick={() => alert(`You have reserved ${vaccine.name}`)}
-                        >
-                            Reserve
-                        </button>
+                        {/* Image Section */}
+                        <div className="flex-shrink-0">
+                            <img
+                                src={vaccine.image}
+                                alt={vaccine.name}
+                                className="rounded-lg mb-4 w-full h-48 object-cover"
+                            />
+                        </div>
+
+                        {/* Vaccine Info Section */}
+                        <div className="flex-grow">
+                            <h3 className="text-2xl font-bold mb-3 text-gradient bg-clip-text from-blue-400 to-purple-500 truncate">
+                                {vaccine.name}
+                            </h3>
+                            <p className="text-sm text-gray-300 line-clamp-3">
+                                {vaccine.description || "No description available."}
+                            </p>
+                        </div>
+
+                        {/* Reserve Button */}
+                        <div className="mt-6">
+                            <button
+                                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold shadow-md hover:shadow-lg transition-transform duration-300 transform hover:scale-105"
+                                onClick={() => alert(`You have reserved ${vaccine.name}`)}
+                            >
+                                Reserve
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
